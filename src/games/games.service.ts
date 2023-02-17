@@ -49,6 +49,8 @@ export class GamesService {
       ? [...game.playerIds, player.id]
       : [player.id];
 
+    console.log(test);
+
     this.logger.log(`Adding player to game. ${JSON.stringify(game)}}`);
     return await this.gamesRepository.save(game);
   }
