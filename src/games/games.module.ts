@@ -5,11 +5,12 @@ import { PlayersModule } from '../players/players.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './game.entity';
 import { jwtModule } from '../modules.config';
+import { GamesGateway } from './games.gateway';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Game]), PlayersModule, jwtModule],
   controllers: [GamesController],
-  providers: [GamesService],
+  providers: [GamesService, GamesGateway],
   exports: [TypeOrmModule, GamesService],
 })
 export class GamesModule {}
