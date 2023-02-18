@@ -7,5 +7,5 @@ export class Player {
   id: string;
 
   @Column()
-  displayName: string;
+  name: string;
 }

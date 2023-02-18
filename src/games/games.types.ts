@@ -8,6 +8,19 @@ export type CreateGameFields = {
 export type JoinGameFields = {
   gameId: string;
   playerName: string;
+
+  playerId?: string;
+};
+
+export type AddPlayerFields = {
+  gameId: string;
+  playerId: string;
+  playerName: string;
+};
+
+export type RemovePlayerFields = {
+  gameId: string;
+  playerId: string;
 };
 
 export type RejoinGameFields = object;
@@ -15,7 +28,7 @@ export type RejoinGameFields = object;
 export type AuthPayload = {
   gameId: string;
   playerId: string;
-  displayName: string;
+  playerName: string;
 };
 
 export type RequestWithAuth = Request & AuthPayload;

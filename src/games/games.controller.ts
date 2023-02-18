@@ -50,6 +50,13 @@ export class GamesController {
   @Post('/rejoin')
   @UseGuards(ControllerAuthGuard)
   async rejoin(@Req() request: RequestWithAuth) {
-    return await this.gamesService.getGame(request.gameId);
+    const { gameId, playerId, playerName } = request;
+    const result = await this.gamesService.joinGame({
+      gameId,
+      playerId,
+      playerName,
+    });
+
+    return result;
   }
 }

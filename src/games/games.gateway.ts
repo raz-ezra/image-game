@@ -39,28 +39,56 @@ export class GamesGateway
     this.logger.log('Websocket Gateway initialized');
   }
 
-  handleConnection(client: SocketWithAuth, ...args: any[]): any {
+  async handleConnection(client: SocketWithAuth, ...args: any[]) {
     const sockets = this.io.sockets;
 
     this.logger.debug(
-      `Client connected: playerId = ${client.playerId}, displayName= ${client.displayName}, gameId = ${client.gameId}`,
+      `Client connected: playerId = ${client.playerId}, playerName= ${client.playerName}, gameId = ${client.gameId}`,
     );
     this.logger.log(`WS Client with id: ${client.id} connected`);
     this.logger.log(`Number of connected sockets: ${sockets.size}`);
 
-    this.io.emit('hello', `from ${client.id}`);
+    const roomName = client.gameId;
+    await client.join(roomName);
+
+    const clientCount = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
+
+    this.logger.debug(
+      `playerId: ${client.playerId} joining room: ${roomName} with ${clientCount} clients`,
+    );
+
+    const updatedGame = await this.gamesService.addPlayer({
+      gameId: client.gameId,
+      playerId: client.playerId,
+      playerName: client.playerName,
+    });
+
+    this.io.to(roomName).emit('game_updated', updatedGame);
   }
 
-  handleDisconnect(client: SocketWithAuth): any {
+  async handleDisconnect(client: SocketWithAuth) {
     const sockets = this.io.sockets;
 
     this.logger.debug(
-      `Client disconnected: playerId = ${client.playerId}, displayName= ${client.displayName}, gameId = ${client.gameId}`,
+      `Client disconnected: playerId = ${client.playerId}, playerName= ${client.playerName}, gameId = ${client.gameId}`,
     );
     this.logger.log(`WS Client with id: ${client.id} connected`);
     this.logger.log(`Number of disconnected sockets: ${sockets.size}`);
 
-    // TODO: remove client from DB and send participants-update event
+    const { gameId, playerId } = client;
+    const roomName = gameId;
+    const clientCount = this.io.adapter.rooms?.get(roomName)?.size ?? 0;
+    this.logger.debug(
+      `playerId: ${client.playerId} leaving room: ${roomName} with ${clientCount} clients`,
+    );
+
+    const updatedGame = await this.gamesService.removePlayer({
+      gameId,
+      playerId,
+    });
+    if (updatedGame) {
+      this.io.to(roomName).emit('game_updated', updatedGame);
+    }
   }
 
   @SubscribeMessage('remove_player')
@@ -73,7 +101,10 @@ export class GamesGateway
       `Attempting to remove player ${id} from game ${client.gameId}`,
     );
 
-    const updatedGame = await this.gamesService.removePlayer(client.gameId, id);
+    const updatedGame = await this.gamesService.removePlayer({
+      gameId: client.gameId,
+      playerId: id,
+    });
 
     if (updatedGame) {
       this.io.to(client.gameId).emit('game_updated', updatedGame);

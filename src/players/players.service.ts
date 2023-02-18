@@ -16,14 +16,22 @@ export class PlayersService {
     return await this.playersRepository.find();
   }
 
-  async createPlayer(playerName: string): Promise<Player> {
-    const playerId = createPlayerId();
+  async getPlayer(id: string) {
+    return await this.playersRepository.findOneBy({ id });
+  }
+
+  async createPlayer(playerName: string, playerId?: string): Promise<Player> {
+    const finalPlayerId = playerId ?? createPlayerId();
 
     const player = new Player();
-    player.id = playerId;
-    player.displayName = playerName;
+    player.id = finalPlayerId;
+    player.name = playerName;
 
     this.logger.log(`Creating player: ${JSON.stringify(player)}}`);
     return await this.playersRepository.save(player);
+  }
+
+  async deletePlayer(playerId: string) {
+    return await this.playersRepository.delete(playerId);
   }
 }

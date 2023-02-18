@@ -1,5 +1,16 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { CreateGameFields, JoinGameFields } from './games.types';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  AddPlayerFields,
+  CreateGameFields,
+  JoinGameFields,
+  RemovePlayerFields,
+} from './games.types';
 import { createGameId } from '../ids';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -38,7 +49,7 @@ export class GamesService {
     const game = new Game();
     game.id = gameId;
     game.adminId = admin.id;
-    game.playerIds = [admin.id];
+    game.playerIds = [];
     game.hasStarted = false;
     game.hasEnded = false;
 
@@ -49,7 +60,7 @@ export class GamesService {
       `Creating token. gameId = ${gameId}, subject = ${admin.id}`,
     );
     const signedToken = this.jwtService.sign(
-      { gameId, playerId: admin.id, displayName: admin.displayName },
+      { gameId, playerId: admin.id, playerName: admin.name },
       { subject: admin.id },
     );
 
@@ -62,33 +73,55 @@ export class GamesService {
   async joinGame(fields: JoinGameFields) {
     const game = await this.getGame(fields.gameId);
 
+    if (game.hasStarted) {
+      const message = `Game ${game.id} has already started`;
+      this.logger.error(message);
+      throw new BadRequestException(message);
+    }
     const player = await this.playersService.createPlayer(fields.playerName);
 
-    game.playerIds = [...game.playerIds, player.id];
-
-    this.logger.log(`Adding player to game. ${JSON.stringify(game)}}`);
-    const updatedGame = await this.gamesRepository.save(game);
-
     this.logger.log(
-      `Creating token. gameId = ${updatedGame.id}, subject = ${player.id}`,
+      `Creating token. gameId = ${game.id}, playerId = ${player.id}, playerName = ${player.name} subject = ${player.id}`,
     );
     const signedToken = this.jwtService.sign(
       {
-        gameId: updatedGame.id,
+        gameId: game.id,
         playerId: player.id,
-        displayName: player.displayName,
+        playerName: player.name,
       },
       { subject: player.id },
     );
 
     return {
-      game: updatedGame,
+      game: game,
       accessToken: signedToken,
     };
   }
 
-  async removePlayer(gameId: string, playerId: string) {
+  async addPlayer({ gameId, playerId, playerName }: AddPlayerFields) {
     const game = await this.getGame(gameId);
+
+    if (game.hasStarted) {
+      const message = `Game ${game.id} has already started`;
+      this.logger.error(message);
+      throw new BadRequestException(message);
+    }
+    const player = await this.playersService.createPlayer(playerName, playerId);
+
+    game.playerIds = [...game.playerIds, player.id];
+
+    this.logger.log(`Adding player to game. ${JSON.stringify(game)}}`);
+    return await this.gamesRepository.save(game);
+  }
+
+  async removePlayer({ gameId, playerId }: RemovePlayerFields) {
+    const game = await this.getGame(gameId);
+
+    if (!game) {
+      const message = `Game ${game.id} not found`;
+      this.logger.error(message);
+      throw new NotFoundException(message);
+    }
 
     const { playerIds } = game;
     const playerIndex = playerIds.indexOf(playerId);
@@ -96,6 +129,7 @@ export class GamesService {
       this.logger.error(`Player ${playerId} not found in game`);
       throw new NotFoundException(`Player ${playerId} not found in game`);
     }
+    await this.playersService.deletePlayer(playerId);
     const newPlayerIds = [
       ...playerIds.slice(0, playerIndex),
       ...playerIds.slice(playerIndex + 1),

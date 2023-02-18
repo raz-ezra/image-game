@@ -55,7 +55,7 @@ const createTokenMiddleware =
       const payload = jwtService.verify(token);
       socket.gameId = payload.gameId;
       socket.playerId = payload.playerId;
-      socket.displayName = payload.displayName;
+      socket.playerName = payload.playerName;
       logger.log('Valid access token in WS', { payload });
       next();
     } catch {

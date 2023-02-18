@@ -24,7 +24,7 @@ export class ControllerAuthGuard implements CanActivate {
       const payload = this.jwtService.verify(accessToken);
       request.gameId = payload.gameId;
       request.playerId = payload.playerId;
-      request.displayName = payload.displayName;
+      request.playerName = payload.playerName;
       this.logger.log('Valid access token', { payload });
       return true;
     } catch (e) {
