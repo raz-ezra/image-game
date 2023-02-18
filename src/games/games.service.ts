@@ -78,7 +78,16 @@ export class GamesService {
       this.logger.error(message);
       throw new BadRequestException(message);
     }
-    const player = await this.playersService.createPlayer(fields.playerName);
+    const player = await this.playersService.createPlayer(
+      fields.playerName,
+      fields.playerId,
+    );
+
+    if (fields.playerId) {
+      return {
+        game,
+      };
+    }
 
     this.logger.log(
       `Creating token. gameId = ${game.id}, playerId = ${player.id}, playerName = ${player.name} subject = ${player.id}`,
@@ -93,7 +102,7 @@ export class GamesService {
     );
 
     return {
-      game: game,
+      game,
       accessToken: signedToken,
     };
   }
@@ -118,7 +127,7 @@ export class GamesService {
     const game = await this.getGame(gameId);
 
     if (!game) {
-      const message = `Game ${game.id} not found`;
+      const message = `Game ${gameId} not found`;
       this.logger.error(message);
       throw new NotFoundException(message);
     }

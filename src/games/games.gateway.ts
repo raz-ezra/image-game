@@ -72,6 +72,7 @@ export class GamesGateway
     this.logger.debug(
       `Client disconnected: playerId = ${client.playerId}, playerName= ${client.playerName}, gameId = ${client.gameId}`,
     );
+
     this.logger.log(`WS Client with id: ${client.id} connected`);
     this.logger.log(`Number of disconnected sockets: ${sockets.size}`);
 
