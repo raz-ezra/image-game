@@ -1,4 +1,3 @@
-// service types
 export type CreateGameFields = {
   playerName: string;
 };
@@ -10,4 +9,10 @@ export type JoinGameFields = {
 
 export type RejoinGameFields = object;
 
-// repository types
+type AuthPayload = {
+  gameId: string;
+  playerId: string;
+  displayName: string;
+};
+
+export type RequestWithAuth = Request & AuthPayload;

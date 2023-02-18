@@ -1,14 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import {
-  CreateGameFields,
-  JoinGameFields,
-  RejoinGameFields,
-} from './games.types';
+import { CreateGameFields, JoinGameFields } from './games.types';
 import { createGameId } from '../ids';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Game } from './game.entity';
 import { PlayersService } from '../players/players.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class GamesService {
@@ -20,7 +17,19 @@ export class GamesService {
 
     @Inject(PlayersService)
     private playersService: PlayersService,
+
+    @Inject(JwtService)
+    private jwtService: JwtService,
   ) {}
+
+  async getAllGames() {
+    return await this.gamesRepository.find();
+  }
+
+  async getGameById(id: string) {
+    return await this.gamesRepository.findBy({ id });
+  }
+
   async createGame(fields: CreateGameFields) {
     const gameId = createGameId();
 
@@ -29,33 +38,45 @@ export class GamesService {
     const game = new Game();
     game.id = gameId;
     game.adminId = admin.id;
-
-    // TODO: create accessToken based on game id + admin id
+    game.playerIds = [];
+    game.hasStarted = false;
+    game.hasEnded = false;
 
     this.logger.log(`Creating game. ${JSON.stringify(game)}}`);
-    return await this.gamesRepository.save(game);
+    const createdGame = await this.gamesRepository.save(game);
+
+    this.logger.log(
+      `Creating token. gameId = ${gameId}, subject = ${admin.id}`,
+    );
+    const signedToken = this.jwtService.sign({ gameId }, { subject: admin.id });
+
+    return {
+      game: createdGame,
+      accessToken: signedToken,
+    };
   }
 
   async joinGame(fields: JoinGameFields) {
-    const game = await this.gamesRepository.findOne({
-      where: { id: fields.gameId },
-    });
+    const game = await this.gamesRepository.findOneBy({ id: fields.gameId });
 
     const player = await this.playersService.createPlayer(fields.playerName);
 
-    console.log(game);
-    console.log(game.playerIds);
-    game.playerIds = game.playerIds
-      ? [...game.playerIds, player.id]
-      : [player.id];
-
-    console.log(test);
+    game.playerIds = [...game.playerIds, player.id];
 
     this.logger.log(`Adding player to game. ${JSON.stringify(game)}}`);
-    return await this.gamesRepository.save(game);
-  }
+    const updatedGame = await this.gamesRepository.save(game);
 
-  async rejoinGame(fields: RejoinGameFields) {
-    return fields;
+    this.logger.log(
+      `Creating token. gameId = ${updatedGame.id}, subject = ${player.id}`,
+    );
+    const signedToken = this.jwtService.sign(
+      { gameId: updatedGame.id },
+      { subject: player.id },
+    );
+
+    return {
+      game: updatedGame,
+      accessToken: signedToken,
+    };
   }
 }

@@ -1,10 +1,34 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { CreateGameDto, JoinGameDto, RejoinGameDto } from './games.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { CreateGameDto, JoinGameDto } from './games.dto';
 import { GamesService } from './games.service';
+import { ControllerAuthGuard } from './controller-auth.guard';
+import { RequestWithAuth } from './games.types';
 
 @Controller('games')
 export class GamesController {
   constructor(private gamesService: GamesService) {}
+
+  @Get()
+  async getAllGames() {
+    const result = await this.gamesService.getAllGames();
+
+    return result;
+  }
+
+  @Get('/:id')
+  async getGameById(@Param('id') id: string) {
+    const result = await this.gamesService.getGameById(id);
+
+    return result;
+  }
 
   @Post('/create')
   async create(@Body() createGameDto: CreateGameDto) {
@@ -21,7 +45,8 @@ export class GamesController {
   }
 
   @Post('/rejoin')
-  async rejoin(@Body() joinGameDto: RejoinGameDto) {
-    const result = await this.gamesService.rejoinGame(joinGameDto);
+  @UseGuards(ControllerAuthGuard)
+  async rejoin(@Req() request: RequestWithAuth) {
+    return await this.gamesService.getGameById(request.gameId);
   }
 }

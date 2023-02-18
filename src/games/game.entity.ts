@@ -1,5 +1,4 @@
-import { Entity, ManyToMany, ManyToOne, PrimaryColumn, Unique } from 'typeorm';
-import { Player } from '../players/player.entity';
+import { Column, Entity, PrimaryColumn, Unique } from 'typeorm';
 
 @Entity()
 @Unique(['id'])
@@ -7,9 +6,15 @@ export class Game {
   @PrimaryColumn()
   id: string;
 
-  @ManyToOne(() => Player, (player) => player.id)
+  @Column()
   adminId: string;
 
-  @ManyToMany(() => Player, (player) => player.id)
+  @Column('text', { array: true })
   playerIds: string[];
+
+  @Column()
+  hasStarted: boolean;
+
+  @Column()
+  hasEnded: boolean;
 }

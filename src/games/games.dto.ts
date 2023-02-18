@@ -15,5 +15,3 @@ export class JoinGameDto {
   @IsNotEmpty()
   readonly playerName: string;
 }
-
-export class RejoinGameDto {}

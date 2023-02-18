@@ -20,8 +20,8 @@ export class PlayersService {
     const playerId = createPlayerId();
 
     const player = new Player();
-    player.displayName = playerName;
     player.id = playerId;
+    player.displayName = playerName;
 
     this.logger.log(`Creating player: ${JSON.stringify(player)}}`);
     return await this.playersRepository.save(player);
