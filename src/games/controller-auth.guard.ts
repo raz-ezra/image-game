@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RequestWithAuth } from './games.types';
 
 @Injectable()
 export class ControllerAuthGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class ControllerAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request: RequestWithAuth = context.switchToHttp().getRequest();
 
     this.logger.debug('Checking for auth tocken on request body', request.body);
 
@@ -24,6 +25,7 @@ export class ControllerAuthGuard implements CanActivate {
       request.gameId = payload.gameId;
       request.playerId = payload.playerId;
       request.displayName = payload.displayName;
+      this.logger.log('Valid access token', { payload });
       return true;
     } catch (e) {
       throw new ForbiddenException('Invalid access token');

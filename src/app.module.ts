@@ -32,5 +32,6 @@ import { GamesModule } from './games/games.module';
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [],
 })
 export class AppModule {}

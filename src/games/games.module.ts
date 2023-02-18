@@ -4,8 +4,8 @@ import { GamesService } from './games.service';
 import { PlayersModule } from '../players/players.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './game.entity';
-import { jwtModule } from '../modules.config';
 import { GamesGateway } from './games.gateway';
+import { jwtModule } from '../modules.config';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Game]), PlayersModule, jwtModule],

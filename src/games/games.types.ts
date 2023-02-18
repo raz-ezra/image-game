@@ -1,3 +1,6 @@
+import { Request } from 'express';
+import { Socket } from 'socket.io';
+
 export type CreateGameFields = {
   playerName: string;
 };
@@ -9,10 +12,12 @@ export type JoinGameFields = {
 
 export type RejoinGameFields = object;
 
-type AuthPayload = {
+export type AuthPayload = {
   gameId: string;
   playerId: string;
   displayName: string;
 };
 
 export type RequestWithAuth = Request & AuthPayload;
+
+export type SocketWithAuth = Socket & AuthPayload;

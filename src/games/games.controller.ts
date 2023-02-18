@@ -6,6 +6,8 @@ import {
   Post,
   Req,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateGameDto, JoinGameDto } from './games.dto';
 import { GamesService } from './games.service';
@@ -25,12 +27,13 @@ export class GamesController {
 
   @Get('/:id')
   async getGameById(@Param('id') id: string) {
-    const result = await this.gamesService.getGameById(id);
+    const result = await this.gamesService.getGame(id);
 
     return result;
   }
 
   @Post('/create')
+  @UsePipes(new ValidationPipe())
   async create(@Body() createGameDto: CreateGameDto) {
     const result = await this.gamesService.createGame(createGameDto);
 
@@ -47,6 +50,6 @@ export class GamesController {
   @Post('/rejoin')
   @UseGuards(ControllerAuthGuard)
   async rejoin(@Req() request: RequestWithAuth) {
-    return await this.gamesService.getGameById(request.gameId);
+    return await this.gamesService.getGame(request.gameId);
   }
 }

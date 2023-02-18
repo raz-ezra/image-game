@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGameFields, JoinGameFields } from './games.types';
 import { createGameId } from '../ids';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,8 +26,8 @@ export class GamesService {
     return await this.gamesRepository.find();
   }
 
-  async getGameById(id: string) {
-    return await this.gamesRepository.findBy({ id });
+  async getGame(id: string) {
+    return await this.gamesRepository.findOneBy({ id });
   }
 
   async createGame(fields: CreateGameFields) {
@@ -38,7 +38,7 @@ export class GamesService {
     const game = new Game();
     game.id = gameId;
     game.adminId = admin.id;
-    game.playerIds = [];
+    game.playerIds = [admin.id];
     game.hasStarted = false;
     game.hasEnded = false;
 
@@ -48,7 +48,10 @@ export class GamesService {
     this.logger.log(
       `Creating token. gameId = ${gameId}, subject = ${admin.id}`,
     );
-    const signedToken = this.jwtService.sign({ gameId }, { subject: admin.id });
+    const signedToken = this.jwtService.sign(
+      { gameId, playerId: admin.id, displayName: admin.displayName },
+      { subject: admin.id },
+    );
 
     return {
       game: createdGame,
@@ -57,7 +60,7 @@ export class GamesService {
   }
 
   async joinGame(fields: JoinGameFields) {
-    const game = await this.gamesRepository.findOneBy({ id: fields.gameId });
+    const game = await this.getGame(fields.gameId);
 
     const player = await this.playersService.createPlayer(fields.playerName);
 
@@ -70,7 +73,11 @@ export class GamesService {
       `Creating token. gameId = ${updatedGame.id}, subject = ${player.id}`,
     );
     const signedToken = this.jwtService.sign(
-      { gameId: updatedGame.id },
+      {
+        gameId: updatedGame.id,
+        playerId: player.id,
+        displayName: player.displayName,
+      },
       { subject: player.id },
     );
 
@@ -78,5 +85,26 @@ export class GamesService {
       game: updatedGame,
       accessToken: signedToken,
     };
+  }
+
+  async removePlayer(gameId: string, playerId: string) {
+    const game = await this.getGame(gameId);
+
+    const { playerIds } = game;
+    const playerIndex = playerIds.indexOf(playerId);
+    if (playerIndex === -1) {
+      this.logger.error(`Player ${playerId} not found in game`);
+      throw new NotFoundException(`Player ${playerId} not found in game`);
+    }
+    const newPlayerIds = [
+      ...playerIds.slice(0, playerIndex),
+      ...playerIds.slice(playerIndex + 1),
+    ];
+    game.playerIds = newPlayerIds;
+    this.logger.log(
+      `Updating game ${game.id} with new playerIds`,
+      newPlayerIds,
+    );
+    return await this.gamesRepository.save(game);
   }
 }
