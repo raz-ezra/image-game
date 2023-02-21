@@ -48,17 +48,16 @@ CMD npm run test:watch
 
 FROM base AS prod
 
-ENV NODE_ENV=production
-
-RUN npm install --only=production
-
-COPY . .
+#ENV NODE_ENV=production
 
 EXPOSE 3000
 
-RUN npm install -g @nestjs/cli
+RUN npm install
+COPY . .
+
 RUN npm install -g turbo
+RUN npm install -g @nestjs/cli
 
-RUN npm run build -- --no-cache
+RUN npm run build
 
-CMD [ "node", "server/dist/main" ]
+CMD [ "npm", "run", "start:prod", "--workspace", "server" ]

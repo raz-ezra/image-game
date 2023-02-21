@@ -15,7 +15,7 @@ import { join } from 'path';
       rootPath: join(__dirname, '../..', 'client', 'dist'),
     }),
     ConfigModule.forRoot({
-      envFilePath: [`stage.${process.env.STAGE}.env`],
+      envFilePath: [`./stage.${process.env.STAGE}.env`],
       validationSchema: configSchemaValidation,
     }),
     TypeOrmModule.forRootAsync({
