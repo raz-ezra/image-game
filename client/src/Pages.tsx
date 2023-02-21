@@ -1,10 +1,16 @@
 import React from "react";
-import { CreateGame } from "./components/CreateGame";
-import { JoinGame } from "./components/JoinGame";
+import { CreateGame } from "./pages/Welcome/CreateGame";
+import { JoinGame } from "./pages/Welcome/JoinGame";
 import { GameContext } from "./providers/GameProvider";
+import { Welcome } from "./pages/Welcome/Welcome";
 
 export const Pages: React.FC = () => {
   const { game } = React.useContext(GameContext);
+
+  if (!game) {
+    return <Welcome />;
+  }
+
   return (
     <div style={{ maxWidth: 200 }}>
       <CreateGame />

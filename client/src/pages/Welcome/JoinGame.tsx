@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { useGame } from "../providers/GameProvider";
+import { useGame } from "../../providers/GameProvider";
 
 export const JoinGame: React.FC = () => {
   const [playerName, setPlayerName] = useState<string>("");

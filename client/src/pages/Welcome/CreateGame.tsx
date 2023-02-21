@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from "react";
-import { useGame } from "../providers/GameProvider";
+import { useGame } from "../../providers/GameProvider";
+import { Flex } from "../../components/Layout";
+import { Button } from "../../components/Button";
 
 export const CreateGame: React.FC = () => {
   const [playerName, setPlayerName] = useState<string>("");
@@ -10,13 +12,13 @@ export const CreateGame: React.FC = () => {
   }, [playerName]);
 
   return (
-    <div>
+    <Flex column gap={20}>
       <input
         type="text"
         value={playerName}
         onChange={(e) => setPlayerName(e.target.value)}
       />
-      <button onClick={handleCreateGame}>Create Game</button>
-    </div>
+      <Button onClick={handleCreateGame}>Create Game</Button>
+    </Flex>
   );
 };

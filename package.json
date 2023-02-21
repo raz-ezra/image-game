@@ -22,5 +22,8 @@
     "client",
     "server",
     "shared"
-  ]
+  ],
+  "dependencies": {
+    "@types/styled-components": "^5.1.26"
+  }
 }
