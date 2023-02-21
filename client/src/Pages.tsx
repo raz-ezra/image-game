@@ -1,11 +1,9 @@
 import React from "react";
-import { CreateGame } from "./pages/Welcome/CreateGame";
-import { JoinGame } from "./pages/Welcome/JoinGame";
-import { GameContext } from "./providers/GameProvider";
+import { useGame } from "./providers/GameProvider";
 import { Welcome } from "./pages/Welcome/Welcome";
 
 export const Pages: React.FC = () => {
-  const { game } = React.useContext(GameContext);
+  const { game, setGame } = useGame();
 
   if (!game) {
     return <Welcome />;
@@ -13,10 +11,9 @@ export const Pages: React.FC = () => {
 
   return (
     <div style={{ maxWidth: 200 }}>
-      <CreateGame />
-      <JoinGame />
       <div>{game?.id}</div>
       <div>{JSON.stringify(game?.playerIds)}</div>
+      <button onClick={() => setGame(null)}>Leave Game</button>
     </div>
   );
 };

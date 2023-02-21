@@ -28,11 +28,5 @@ export const Button = styled.button<{ variant?: Variant; fullWidth?: boolean }>`
     Variants[variant || Variant.primary].backgroundColor};
   color: ${({ variant }) => Variants[variant || Variant.primary].color};
   cursor: pointer;
-  transition: all 0.25s;
   width: ${({ fullWidth }) => (fullWidth ? "100%" : "fit-content")};
-
-  :hover {
-    scale: 1.1;
-    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.1);
-  }
 `;

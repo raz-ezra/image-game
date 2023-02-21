@@ -12,6 +12,7 @@ interface GameContextType {
   game: Game | null;
   createGame: (playerName: string) => void;
   joinGame: (playerName: string, gameId: string) => void;
+  setGame: (game: Game | null) => void;
 }
 
 export const GameContext = React.createContext<GameContextType>(
@@ -41,6 +42,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
     game,
     createGame,
     joinGame,
+    setGame,
   };
 
   return (

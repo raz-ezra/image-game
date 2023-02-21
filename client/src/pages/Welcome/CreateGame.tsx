@@ -1,9 +1,16 @@
 import React, { useCallback, useState } from "react";
 import { useGame } from "../../providers/GameProvider";
-import { Flex } from "../../components/Layout";
-import { Button } from "../../components/Button";
+import { TextInput } from "../../components/Input";
+import { WelcomeScreenWrapper } from "./WelcomeScreenWrapper";
 
-export const CreateGame: React.FC = () => {
+interface CreateGameProps {
+  isActive: boolean;
+  setIsActive: (isActive: boolean) => void;
+}
+export const CreateGame: React.FC<CreateGameProps> = ({
+  isActive,
+  setIsActive,
+}) => {
   const [playerName, setPlayerName] = useState<string>("");
   const { createGame } = useGame();
 
@@ -12,13 +19,16 @@ export const CreateGame: React.FC = () => {
   }, [playerName]);
 
   return (
-    <Flex column gap={20}>
-      <input
-        type="text"
+    <WelcomeScreenWrapper
+      isActive={isActive}
+      setIsActive={setIsActive}
+      cta={{ text: "Create Game", onClick: handleCreateGame }}
+    >
+      <TextInput
         value={playerName}
+        placeholder="Name"
         onChange={(e) => setPlayerName(e.target.value)}
       />
-      <Button onClick={handleCreateGame}>Create Game</Button>
-    </Flex>
+    </WelcomeScreenWrapper>
   );
 };
