@@ -21,6 +21,7 @@ async function bootstrap() {
   });
   app.useWebSocketAdapter(new SocketIoAdapter(app, configService));
 
+  app.setGlobalPrefix('api');
   await app.listen(port);
 
   logger.log(`Application listening on port ${port}`);

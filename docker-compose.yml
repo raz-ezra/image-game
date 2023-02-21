@@ -7,8 +7,11 @@ services:
       target: dev
     ports:
       - '8080:3000'
+      - '5173:5173'
     volumes:
-      - ./src:/usr/src/app/src
+      - ./server:/usr/src/app/server
+      - ./shared:/usr/src/app/shared
+      - ./client:/usr/src/app/client
     depends_on:
       - db
 

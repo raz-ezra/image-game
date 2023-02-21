@@ -1,13 +1,20 @@
 FROM node:18-alpine AS base
 
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY client/package*.json ./client/
+COPY server/package*.json ./server/
 
 
 FROM base AS dev
 
 ENV NODE_ENV=development
+
+EXPOSE 3000
+EXPOSE 5173
 
 RUN npm install
 COPY . .
@@ -42,11 +49,16 @@ CMD npm run test:watch
 FROM base AS prod
 
 ENV NODE_ENV=production
+
 RUN npm install --only=production
 
-RUN npm install -g @nestjs/cli
-RUN npm run build
+COPY . .
 
 EXPOSE 3000
 
-CMD [ "node", "dist/main" ]
+RUN npm install -g @nestjs/cli
+RUN npm install -g turbo
+
+RUN npm run build -- --no-cache
+
+CMD [ "node", "server/dist/main" ]

@@ -6,9 +6,14 @@ import { PlayersModule } from './players/players.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configSchemaValidation } from './config.schema';
 import { GamesModule } from './games/games.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../..', 'client', 'dist'),
+    }),
     ConfigModule.forRoot({
       envFilePath: [`stage.${process.env.STAGE}.env`],
       validationSchema: configSchemaValidation,
