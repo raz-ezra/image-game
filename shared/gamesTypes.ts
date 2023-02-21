@@ -10,7 +10,7 @@ export type Image = {
 
 export interface Game {
   id: string;
-  players: Players;
+  playerIds: Players;
   adminId: string;
   images: Image[];
 }
