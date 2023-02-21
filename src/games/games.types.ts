@@ -23,8 +23,6 @@ export type RemovePlayerFields = {
   playerId: string;
 };
 
-export type RejoinGameFields = object;
-
 export type AuthPayload = {
   gameId: string;
   playerId: string;
