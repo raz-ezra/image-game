@@ -7,17 +7,20 @@ import { Variant } from "../../components/Colors";
 interface CreateGameProps {
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
+  navigateToGame: () => void;
 }
 export const JoinGame: React.FC<CreateGameProps> = ({
   isActive,
   setIsActive,
+  navigateToGame,
 }) => {
   const [playerName, setPlayerName] = useState<string>("");
   const [gameId, setGameId] = useState<string>("");
   const { joinGame } = useGame();
 
-  const handleCreateGame = useCallback(() => {
-    joinGame(playerName, gameId);
+  const handleCreateGame = useCallback(async () => {
+    await joinGame(playerName, gameId);
+    navigateToGame();
   }, [playerName, gameId]);
 
   return (

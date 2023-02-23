@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import { CreateGame } from "./CreateGame";
 import { Flex } from "../../components/Layout";
 import { JoinGame } from "./JoinGame";
+import { useNavigate } from "react-router-dom";
 
 enum View {
   Welcome = "Welcome",
@@ -11,6 +12,7 @@ enum View {
 
 export const Welcome: React.FC = () => {
   const [view, setView] = useState<View | null>(View.Welcome);
+  const navigate = useNavigate();
 
   const createClickHandler = useCallback(
     (view: View) => (isActive: boolean) => {
@@ -18,6 +20,10 @@ export const Welcome: React.FC = () => {
     },
     []
   );
+
+  const navigateToGame = useCallback(() => {
+    navigate("/game");
+  }, [navigate]);
 
   return (
     <Flex
@@ -28,10 +34,12 @@ export const Welcome: React.FC = () => {
       <CreateGame
         isActive={view === View.CreateGame}
         setIsActive={createClickHandler(View.CreateGame)}
+        navigateToGame={navigateToGame}
       />
       <JoinGame
         isActive={view === View.JoinGame}
         setIsActive={createClickHandler(View.JoinGame)}
+        navigateToGame={navigateToGame}
       />
     </Flex>
   );

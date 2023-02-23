@@ -12,8 +12,10 @@ import { Game } from "shared/gamesTypes";
 interface ApiContextType {
   makeRequest: (endpoint: string, body: object) => Promise<any>;
   socket: Socket | null;
-  createSocket: (setGame: (game: Game) => void) => Socket;
+  createSocket: (setGame: (game: Game) => void) => void;
+  closeSocketConnection: () => void;
   resetToken: () => void;
+  isLoading: boolean;
 }
 
 export const ApiContext = React.createContext<ApiContextType>(
@@ -23,6 +25,7 @@ export const ApiContext = React.createContext<ApiContextType>(
 export const ApiProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("accessToken")
   );
@@ -31,18 +34,18 @@ export const ApiProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (token) {
       localStorage.setItem("accessToken", token);
-    }
-    {
+    } else {
       socket.current = null;
     }
     console.log("token", localStorage.getItem("accessToken"));
   }, [token]);
 
-  const resetToken = () => {
+  const resetToken = useCallback(() => {
     setToken(null);
-  };
+  }, []);
 
   const makeRequest = useCallback((endpoint: string, body: object) => {
+    setIsLoading(true);
     return fetch(endpoint, {
       method: "POST",
       headers: {
@@ -58,6 +61,7 @@ export const ApiProvider: React.FC<{ children: ReactNode }> = ({
         if (data.accessToken) {
           setToken(data.accessToken);
         }
+        setIsLoading(false);
         return data;
       });
   }, []);
@@ -71,16 +75,23 @@ export const ApiProvider: React.FC<{ children: ReactNode }> = ({
           setGame,
         });
       }
-      return socket.current as Socket;
     },
     [socket.current, token]
   );
+
+  const closeSocketConnection = useCallback(() => {
+    resetToken();
+    socket.current?.close();
+    socket.current = null;
+  }, [resetToken, socket.current]);
 
   const contextValue = {
     makeRequest,
     socket: socket.current,
     createSocket,
     resetToken,
+    isLoading,
+    closeSocketConnection,
   };
 
   return (

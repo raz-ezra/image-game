@@ -13,6 +13,8 @@ interface GameContextType {
   createGame: (playerName: string) => void;
   joinGame: (playerName: string, gameId: string) => void;
   setGame: (game: Game | null) => void;
+  isLoading: boolean;
+  leaveGame: () => void;
 }
 
 export const GameContext = React.createContext<GameContextType>(
@@ -22,27 +24,41 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [game, setGame] = useState<Game | null>(null);
-  const { makeRequest, createSocket, resetToken } = useApi();
+  const {
+    makeRequest,
+    createSocket,
+    resetToken,
+    isLoading,
+    socket,
+    closeSocketConnection,
+  } = useApi();
 
   useEffect(() => {
     createSocket(setGame);
   }, [createSocket]);
 
-  const createGame = useCallback((playerName: string) => {
+  const createGame = useCallback(async (playerName: string) => {
     resetToken();
-    makeRequest("/api/games/create", { playerName });
+    await makeRequest("/api/games/create", { playerName });
   }, []);
 
-  const joinGame = useCallback((playerName: string, gameId: string) => {
+  const joinGame = useCallback(async (playerName: string, gameId: string) => {
     resetToken();
-    makeRequest("/api/games/join", { playerName, gameId });
+    await makeRequest("/api/games/join", { playerName, gameId });
   }, []);
+
+  const leaveGame = useCallback(async () => {
+    closeSocketConnection();
+    setGame(null);
+  }, [closeSocketConnection]);
 
   const contextValue = {
     game,
     createGame,
     joinGame,
     setGame,
+    isLoading,
+    leaveGame,
   };
 
   return (

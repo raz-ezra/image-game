@@ -6,16 +6,19 @@ import { WelcomeScreenWrapper } from "./WelcomeScreenWrapper";
 interface CreateGameProps {
   isActive: boolean;
   setIsActive: (isActive: boolean) => void;
+  navigateToGame: () => void;
 }
 export const CreateGame: React.FC<CreateGameProps> = ({
   isActive,
   setIsActive,
+  navigateToGame,
 }) => {
   const [playerName, setPlayerName] = useState<string>("");
   const { createGame } = useGame();
 
-  const handleCreateGame = useCallback(() => {
-    createGame(playerName);
+  const handleCreateGame = useCallback(async () => {
+    await createGame(playerName);
+    navigateToGame();
   }, [playerName]);
 
   return (
